@@ -1,0 +1,44 @@
+import { api } from '@/lib/api';
+
+export type Listing = {
+  id: number;
+  title: string;
+  article: string;
+  description: string;
+  price: number;
+  isActive: boolean;
+  createdAt: string;
+  category: { id: number; name: string };
+  images: { id: number; url: string }[];
+  supplier: { id: number; name: string; phone: string; userId?: number; user?: { id: number; email: string } };
+};
+
+export const getListings = (params?: {
+  categoryId?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  search?: string;
+}) => {
+  const qs = new URLSearchParams();
+  if (params?.categoryId) qs.set('categoryId', String(params.categoryId));
+  if (params?.minPrice !== undefined) qs.set('minPrice', String(params.minPrice));
+  if (params?.maxPrice !== undefined) qs.set('maxPrice', String(params.maxPrice));
+  if (params?.search) qs.set('search', params.search);
+  const q = qs.toString();
+  return api.get<Listing[]>(`/listings${q ? `?${q}` : ''}`);
+};
+
+export const getListing = (id: number) => api.get<Listing>(`/listings/${id}`);
+
+export const getMyListings = () => api.get<Listing[]>('/listings/my');
+
+export const createListing = (payload: {
+  title: string;
+  article: string;
+  description: string;
+  price: number;
+  categoryId: number;
+}) => api.post<Listing>('/listings', payload);
+
+export const toggleListing = (id: number, isActive: boolean) =>
+  api.patch<Listing>(`/listings/${id}/toggle`, { isActive });

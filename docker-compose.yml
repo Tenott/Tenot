@@ -1,0 +1,77 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: tenot-db
+    environment:
+      POSTGRES_USER: autoparts
+      POSTGRES_PASSWORD: autoparts
+      POSTGRES_DB: autoparts
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U autoparts -d autoparts"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    container_name: tenot-api
+    build:
+      context: ./backend/api
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql://autoparts:autoparts@db:5432/autoparts
+      JWT_SECRET: ${JWT_SECRET:-dev_secret}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3001:3001"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/categories || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  web:
+    container_name: tenot-web
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      NEXT_PUBLIC_BACKEND_URL: http://api:3001
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: tenot-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infra/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./infra/nginx/ssl:/etc/letsencrypt:ro
+      - ./infra/nginx/www:/var/www/certbot:ro
+      - ./infra/nginx/auth:/etc/nginx/auth:ro
+      - ./infra/nginx/log:/var/log/nginx
+    depends_on:
+      web:
+        condition: service_healthy
+    restart: always
+
+volumes:
+  pgdata:
