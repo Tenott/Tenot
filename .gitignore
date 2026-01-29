@@ -11,6 +11,7 @@ vendor/
 dist/
 build/
 .next/
+*.tsbuildinfo
 
 # Backups
 backups/
