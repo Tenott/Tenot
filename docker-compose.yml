@@ -43,7 +43,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     environment:
-      NEXT_PUBLIC_BACKEND_URL: http://api:3001
+      BACKEND_URL: http://api:3001
+      NODE_ENV: production
     depends_on:
       api:
         condition: service_healthy
