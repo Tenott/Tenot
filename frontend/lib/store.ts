@@ -9,6 +9,7 @@ export type User = {
   name: string;
   city?: string;
   phone?: string;
+  role?: "BUYER" | "SUPPLIER" | "ADMIN";
 };
 
 export type Item = {
@@ -55,7 +56,10 @@ export const useStore = create<Store>((set, get) => ({
 
   setUser: (u) => set({ user: u }),
 
-  logout: () => set({ user: null }),
+  logout: () => {
+    fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    set({ user: null });
+  },
 
   updateProfile: (patch) =>
     set((s) => ({
