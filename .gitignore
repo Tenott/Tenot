@@ -1,7 +1,39 @@
+# Environment files
 .env
-.env.*
+.env.local
+.env.production
+
+# Dependencies
 node_modules/
 vendor/
+
+# Build outputs
 dist/
 build/
+.next/
+*.tsbuildinfo
+
+# Backups
 backups/
+
+# Nginx SSL certs (keep directory structure)
+infra/nginx/ssl/*
+!infra/nginx/ssl/.gitkeep
+
+# Nginx logs
+infra/nginx/log/*
+!infra/nginx/log/.gitkeep
+
+# Nginx auth files
+infra/nginx/auth/*
+!infra/nginx/auth/.gitkeep
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
